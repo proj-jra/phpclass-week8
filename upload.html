@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Upload & Bibliography</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Image Upload & Bibliography Generator</h1>
+        
+        <!-- Results section -->
+        <div id="results"></div>
+        
+        <form action="upload.php" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="image">Select Image to Upload:</label>
+                <input type="file" name="image" id="image" accept="image/*" required>
+            </div>
+            <input type="submit" value="Upload Image & Generate Bibliography" name="submit">
+        </form>
+        
+        <!-- Image preview section -->
+        <div id="image-display"></div>
+        
+        <!-- Bibliography section -->
+        <div id="bibliography-section"></div>
+    </div>
+
+    <script>
+        // Check URL parameters for results
+        const urlParams = new URLSearchParams(window.location.search);
+        const results = document.getElementById('results');
+        
+        if (urlParams.get('success')) {
+            results.innerHTML = '<div class="result success">Image is valid. Image uploaded and bibliography created successfully!</div>';
+            
+            // Show uploaded image
+            const imageName = urlParams.get('image');
+            if (imageName) {
+                document.getElementById('image-display').innerHTML = 
+                    '<div class="image-preview"><h3>Uploaded Image:</h3><img src="uploads/' + imageName + '" alt="Uploaded Image" style="max-width: 400px; max-height: 400px;"></div>';
+            }
+            
+            // Load and display bibliography
+            fetch('bibliography.txt')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('bibliography-section').innerHTML = 
+                        '<h3 class="section-title">Bibliography Content:</h3><div class="bibliography">' + data.replace(/\n/g, '<br>') + '</div>';
+                });
+        } else if (urlParams.get('error')) {
+            const error = urlParams.get('error');
+            let message = '';
+            switch(error) {
+                case 'not_image': message = 'Error: File is not an image.'; break;
+                case 'save_failed': message = 'Error saving image file.'; break;
+                case 'no_file': message = 'Error: No file uploaded.'; break;
+                default: message = 'An error occurred.';
+            }
+            results.innerHTML = '<div class="result error">' + message + '</div>';
+        }
+    </script>
+</body>
+</html>
